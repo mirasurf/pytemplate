@@ -1,120 +1,86 @@
 # Mirasurf Python Template
 
-A minimal template project for building Python libraries with modern development practices.
+A minimal, production-ready template for building Python libraries with modern development practices.
 
-## Features
-
-- **Python 3.11+** support
-- **Pydantic** for data validation and configuration
-- **Modern tooling**: pytest, black, isort, mypy
-- **Integration testing** with PostgreSQL
-- **Docker Compose** for development environment
-
-## Quick Start
-
-### Installation
+## 🚀 Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/mirasurf/mirasurf-py-template.git
-cd mirasurf-py-template
+# Clone and customize
+git clone https://github.com/mirasurf/mirasurf-py-template.git my-library
+cd my-library
 
-# Install in development mode
-pip install -e ".[dev,test]"
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+make test
 ```
 
-### Basic Usage
+## ✨ Features
+
+- **Python 3.11+** with type hints
+- **Modern tooling**: pytest, black, isort, mypy, flake8
+- **Integration testing** with PostgreSQL
+- **Docker Compose** for development
+- **Read the Docs** ready
+- **GitHub Actions** workflow
+
+## 📦 Usage
 
 ```python
-from mirasurf_py_template import MirasurfConfig, get_mirasurf_config
+from mirasurf_py_template import MirasurfConfig
 
-# Create a custom configuration
+# Create configuration
 config = MirasurfConfig(
     enable_logging=True,
     log_level="DEBUG",
-    enable_validation=True,
-    enable_transformation=True,
     max_processing_time=60
 )
-
-# Or use default configuration
-default_config = get_mirasurf_config()
 ```
 
-## Development
-
-### Running Tests
+## 🛠️ Development
 
 ```bash
-# Unit tests only
-pytest tests/ -v
+# Code quality
+make format      # Format code
+make lint        # Run linters
+make quality     # All quality checks
 
-# Integration tests (requires PostgreSQL)
-docker-compose up -d postgres
-pytest tests/ -m integration -v
+# Testing
+make test        # All tests
+make test-unit   # Unit tests only
+make test-integration  # Integration tests
 
-# All tests with coverage
-pytest tests/ --cov=mirasurf_py_template --cov-report=html
+# Build
+make build       # Build package
+make clean       # Clean artifacts
 ```
 
-### Code Quality
-
-```bash
-# Format code
-black mirasurf_py_template/ tests/
-isort mirasurf_py_template/ tests/
-
-# Type checking
-mypy mirasurf_py_template/
-
-# Lint with pre-commit
-pre-commit run --all-files
-```
-
-### Building
-
-```bash
-# Build package
-python -m build
-
-# Install from built package
-pip install dist/*.whl
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-mirasurf-py-template/
-├── mirasurf_py_template/     # Main package
-│   ├── __init__.py          # Package exports
-│   └── config.py            # Configuration management
-├── tests/                   # Test suite
-│   ├── test_config.py       # Unit tests
-│   └── test_integration.py  # Integration tests
-├── docker-compose.yml       # Development environment
-├── pyproject.toml          # Project configuration
-└── README.md               # This file
+├── mirasurf_py_template/  # Main package
+├── tests/                 # Test suite
+├── docs/                  # Documentation
+├── docker-compose.yml     # Development environment
+├── pyproject.toml        # Project configuration
+└── Makefile              # Development commands
 ```
 
-## Configuration
+## 🔧 Customization
 
-The template provides a simple configuration system using Pydantic:
+1. **Rename the package**: Update `mirasurf_py_template` to your package name
+2. **Update metadata**: Modify `pyproject.toml` with your project details
+3. **Add your code**: Replace the example config with your library code
+4. **Update tests**: Write tests for your functionality
+5. **Configure CI/CD**: Update GitHub Actions for your repository
 
-- `enable_logging`: Enable/disable logging
-- `log_level`: Logging level (INFO, DEBUG, WARNING, ERROR)
-- `enable_validation`: Enable data validation
-- `enable_transformation`: Enable data transformation
-- `max_processing_time`: Maximum processing time in seconds
+## 📚 Documentation
 
-## Contributing
+- [Python Packaging Guide](https://packaging.python.org/)
+- [Pytest Documentation](https://docs.pytest.org/)
+- [Pydantic Documentation](https://docs.pydantic.dev/)
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+## 📄 License
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+MIT License - see [LICENSE](LICENSE) file for details. 

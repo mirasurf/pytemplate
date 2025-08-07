@@ -1,19 +1,11 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "mirasurf-py-template"
-dynamic = ["version"]
+version = "0.0.1"
 description = "A minimal template project for building Python libraries"
+authors = ["Mirasurf Team <team@example.com>"]
+maintainers = ["Mirasurf Team <team@example.com>"]
 readme = "README.md"
-license = {text = "MIT"}
-authors = [
-    {name = "Mirasurf Team", email = "team@mirasurf.com"},
-]
-maintainers = [
-    {name = "Mirasurf Team", email = "team@mirasurf.com"},
-]
+license = "MIT"
 keywords = ["template", "python", "library", "development"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -25,37 +17,33 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">=3.11"
-dependencies = [
-    "pydantic>=2.0.0",
-]
+packages = [{include = "mirasurf_py_template"}]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "mypy>=1.0.0",
-    "pre-commit>=3.0.0",
-    "build>=1.2.0",
-    "flake8>=6.0.0",
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "psycopg2-binary>=2.9.0",
-]
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.0.0"
 
-[project.urls]
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+pytest-cov = "^4.0.0"
+black = "^23.0.0"
+isort = "^5.12.0"
+mypy = "^1.0.0"
+pre-commit = "^3.0.0"
+build = "^1.2.0"
+flake8 = "^6.0.0"
+psycopg2-binary = "^2.9.0"
+autoflake = "^2.0.0"
+
+[tool.poetry.urls]
 Homepage = "https://github.com/mirasurf/mirasurf-py-template"
 Documentation = "https://mirasurf-py-template.readthedocs.io/"
 Repository = "https://github.com/mirasurf/mirasurf-py-template"
 "Bug Tracker" = "https://github.com/mirasurf/mirasurf-py-template/issues"
 
-[tool.hatch.version]
-path = "mirasurf_py_template/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["mirasurf_py_template"]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120

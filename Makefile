@@ -1,100 +1,135 @@
-# Mirasurf Python Template - Makefile
-
-# Configuration
-PYTHON := python3
-PYTHON_MODULES := mirasurf_py_template
-TEST_DIR := tests
-LINE_LENGTH := 120
-PROJECT_NAME := mirasurf-py-template
+# Variables
+PYTHON = python3
+POETRY = poetry
+PYTEST = pytest
+PYTHON_MODULES = mirasurf_py_template tests
+COVERAGE_MODULES = mirasurf_py_template
+TEST_DIR = tests
+LINE_LENGTH = 120
 
 # Colors for output
-GREEN := \033[0;32m
-BLUE := \033[0;34m
-YELLOW := \033[0;33m
-RED := \033[0;31m
-RESET := \033[0m
+BLUE = \033[34m
+GREEN = \033[32m
+YELLOW = \033[33m
+RED = \033[31m
+RESET = \033[0m
 
-# Development Commands
-.PHONY: install install-dev
+# =============================================================================
+# HELP
+# =============================================================================
 
-install:
+.PHONY: help
+help: ## Show this help message
+	@echo "Available commands:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# =============================================================================
+# SETUP COMMANDS
+# =============================================================================
+
+.PHONY: install install-dev setup check-env
+
+install: ## Install dependencies
 	@echo "$(BLUE)📦 Installing dependencies...$(RESET)"
-	@pip install -e .
+	@$(POETRY) install
 
-install-dev:
+install-dev: ## Install development dependencies
 	@echo "$(BLUE)🔧 Installing development dependencies...$(RESET)"
-	@pip install -e ".[dev]"
+	@$(POETRY) install --with dev
 
-# Code Quality Commands
-.PHONY: format format-check lint lint-fix quality
+setup: install-dev ## Setup development environment
+	@echo "$(GREEN)✅ Development environment ready$(RESET)"
 
-# Format code (black, isort)
-format:
+check-env: ## Check environment setup
+	@echo "$(BLUE)🔍 Checking environment...$(RESET)"
+	@echo "Python version: $$($(PYTHON) --version)"
+	@echo "Poetry version: $$($(POETRY) --version)"
+	@echo "Working directory: $$(pwd)"
+	@echo "Python modules: $(PYTHON_MODULES)"
+
+# =============================================================================
+# TEST COMMANDS
+# =============================================================================
+
+.PHONY: test test-unit test-integration test-coverage test-watch
+
+test: ## Run all tests.
+	@echo "$(BLUE)🧪 Running all tests...$(RESET)"
+	$(POETRY) run $(PYTEST) $(TEST_DIR) -v
+
+test-unit: ## Run unit tests only
+	@echo "$(BLUE)🧪 Running unit tests...$(RESET)"
+	$(POETRY) run $(PYTEST) $(TEST_DIR) -v -m "not integration"
+
+test-integration: ## Run integration tests only
+	@echo "$(BLUE)🧪 Running integration tests...$(RESET)"
+	$(POETRY) run $(PYTEST) $(TEST_DIR) -v -m "integration"
+
+test-coverage: ## Run tests with coverage
+	@echo "$(BLUE)🧪 Running tests with coverage...$(RESET)"
+	$(POETRY) run $(PYTEST) $(TEST_DIR) --cov=$(COVERAGE_MODULES) --cov-report=html --cov-report=term-missing
+
+test-watch: ## Run tests in watch mode
+	@echo "$(BLUE)👀 Running tests in watch mode...$(RESET)"
+	$(POETRY) run pytest-watch $(TEST_DIR) -- -v
+
+# =============================================================================
+# CODE QUALITY COMMANDS
+# =============================================================================
+
+.PHONY: format format-check lint lint-fix quality autofix
+
+format: ## Format code (black, isort, autoflake)
 	@echo "$(BLUE)🎨 Formatting code...$(RESET)"
-	@isort $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
-	@black $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
+	@$(POETRY) run python -m autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables $(PYTHON_MODULES)
+	@$(POETRY) run isort $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
+	@$(POETRY) run black $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
 
-# Check if code is properly formatted
-format-check:
+format-check: ## Check if code is properly formatted
 	@echo "$(BLUE)🔍 Checking code formatting...$(RESET)"
-	@black --check $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
-	@isort --check-only $(PYTHON_MODULES) --line-length $(LINE_LENGTH)
+	@$(POETRY) run black --check $(PYTHON_MODULES) || (echo "$(RED)❌ Code formatting check failed. Run 'make format' to fix.$(RESET)" && exit 1)
+	@$(POETRY) run isort --check-only $(PYTHON_MODULES) || (echo "$(RED)❌ Import sorting check failed. Run 'make format' to fix.$(RESET)" && exit 1)
 
-# Lint code
-lint:
+lint: ## Lint code
 	@echo "$(BLUE)🔍 Running linters...$(RESET)"
-	@flake8 --max-line-length=$(LINE_LENGTH) --extend-ignore=E203,W503 $(PYTHON_MODULES)
-	@mypy $(PYTHON_MODULES)
+	@$(POETRY) run flake8 --max-line-length=$(LINE_LENGTH) --extend-ignore=E203,W503 $(PYTHON_MODULES)
 
-# Auto-fix linting issues where possible
-lint-fix:
+lint-fix: ## Auto-fix linting issues where possible
 	@echo "$(BLUE)🔧 Auto-fixing linting issues...$(RESET)"
-	@autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables $(PYTHON_MODULES)
+	@$(POETRY) run python -m autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables $(PYTHON_MODULES)
 
-# Run all quality checks
-quality: format-check lint
+quality: format-check lint ## Run all quality checks
 	@echo "$(GREEN)🎉 All quality checks passed!$(RESET)"
 
-# Testing Commands
-.PHONY: test test-unit test-integration test-coverage test-watch test-core test-config test-utils
+autofix: lint-fix format ## Auto-fix all code quality issues
 
-test:
-	@echo "$(BLUE)🧪 Running all tests...$(RESET)"
-	@pytest $(TEST_DIR) -v
+# =============================================================================
+# BUILD COMMANDS
+# =============================================================================
 
-test-unit:
-	@echo "$(BLUE)🧪 Running unit tests...$(RESET)"
-	@pytest $(TEST_DIR) -v -m "not integration"
-
-test-integration:
-	@echo "$(BLUE)🧪 Running integration tests...$(RESET)"
-	@pytest $(TEST_DIR) -v -m "integration"
-
-test-coverage:
-	@echo "$(BLUE)🧪 Running tests with coverage...$(RESET)"
-	@pytest $(TEST_DIR) --cov=mirasurf_py_template --cov-report=html --cov-report=term-missing
-
-# Build Commands
 .PHONY: build build-wheel build-sdist package
 
-build:
+build: ## Build package
 	@echo "$(BLUE)🔨 Building package...$(RESET)"
-	@$(PYTHON) -m build
+	@$(POETRY) build
 
-build-wheel:
+build-wheel: ## Build wheel
 	@echo "$(BLUE)🔨 Building wheel...$(RESET)"
-	@$(PYTHON) -m build --wheel
+	@$(POETRY) build --format wheel
 
-build-sdist:
+build-sdist: ## Build source distribution
 	@echo "$(BLUE)🔨 Building source distribution...$(RESET)"
-	@$(PYTHON) -m build --sdist
+	@$(POETRY) build --format sdist
 
-package: clean build
+package: clean build ## Build and package for distribution
 
-# Utility Commands
-.PHONY: clean clean-all shell check-env requirements
+# =============================================================================
+# CLEAN COMMANDS
+# =============================================================================
 
-clean:
+.PHONY: clean clean-all
+
+clean: ## Clean Python cache and build artifacts
 	@echo "$(BLUE)🧹 Cleaning Python cache and build artifacts...$(RESET)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
@@ -108,78 +143,114 @@ clean:
 	@find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf dist/ build/ 2>/dev/null || true
 
-clean-all: clean
+clean-all: clean ## Clean everything including dependencies
 	@echo "$(GREEN)✅ Complete cleanup finished!$(RESET)"
 
-shell:
+# =============================================================================
+# UTILITY COMMANDS
+# =============================================================================
+
+.PHONY: shell requirements version
+
+shell: ## Activate development shell
 	@echo "$(BLUE)🐚 Activating development shell...$(RESET)"
-	@$(PYTHON) -m venv .venv && source .venv/bin/activate
+	@$(POETRY) shell
 
-check-env:
-	@echo "$(BLUE)🔍 Checking environment...$(RESET)"
-	@echo "Python version: $$($(PYTHON) --version)"
-	@echo "Working directory: $$(pwd)"
-	@echo "Python modules: $(PYTHON_MODULES)"
-	@echo "Test directory: $(TEST_DIR)"
-
-requirements:
+requirements: ## Generate requirements files
 	@echo "$(BLUE)📋 Generating requirements files...$(RESET)"
-	@pip freeze > requirements.txt
-	@pip freeze --exclude-editable > requirements-prod.txt
+	@$(POETRY) export -f requirements.txt --output requirements.txt --without-hashes
+	@$(POETRY) export -f requirements.txt --output requirements-prod.txt --without-hashes --only main
 
-run-examples:
-	@echo "$(BLUE)🚀 Running examples...$(RESET)"
-	@$(PYTHON) -c "from mirasurf_py_template import MirasurfCore; core = MirasurfCore(); print('Mirasurf Core initialized successfully!')"
+version: ## Show current version
+	@echo "$(BLUE)Current version:$(RESET)"
+	@echo "Mirasurf Python Template (pyproject.toml): $(shell grep '^version = ' pyproject.toml | cut -d'"' -f2)"
 
-# Documentation Commands
-.PHONY: docs docs-serve docs-build
+# =============================================================================
+# DEVELOPMENT COMMANDS
+# =============================================================================
 
-docs-build:
+.PHONY: dev dev-check full-check
+
+dev-check: quality test-unit ## Quick development check (quality + unit tests)
+
+full-check: format-check lint test build ## Full development check (all checks + all tests + build)
+
+# =============================================================================
+# DOCUMENTATION COMMANDS
+# =============================================================================
+
+.PHONY: docs docs-build docs-serve docs-clean
+
+docs: ## Build documentation
 	@echo "$(BLUE)📚 Building documentation...$(RESET)"
 	@cd docs && make html
+	@echo "$(GREEN)Documentation built: docs/_build/html/index.html$(RESET)"
 
-docs-serve:
-	@echo "$(BLUE)📚 Serving documentation...$(RESET)"
-	@cd docs && python -m http.server 8000
+docs-serve: docs ## Build and serve documentation locally
+	@echo "$(GREEN)Serving documentation at http://localhost:8000$(RESET)"
+	@cd docs/_build/html && python -m http.server 8000
 
-# Help
-.PHONY: help
+docs-clean: ## Clean documentation build artifacts
+	@rm -rf docs/_build/
 
-help:
-	@echo "$(BLUE)Mirasurf Python Template - Makefile$(RESET)"
-	@echo "$(YELLOW)=====================================$(RESET)"
-	@echo ""
-	@echo "$(GREEN)Development Commands:$(RESET)"
-	@echo "  $(YELLOW)make install$(RESET)     - Install dependencies"
-	@echo "  $(YELLOW)make install-dev$(RESET) - Install development dependencies"
-	@echo "  $(YELLOW)make shell$(RESET)       - Activate development shell"
-	@echo ""
-	@echo "$(GREEN)Code Quality Commands:$(RESET)"
-	@echo "  $(YELLOW)make format$(RESET)      - Format code (black, isort, autoflake)"
-	@echo "  $(YELLOW)make format-check$(RESET) - Check code formatting"
-	@echo "  $(YELLOW)make lint$(RESET)        - Run linters (flake8, mypy)"
-	@echo "  $(YELLOW)make lint-fix$(RESET)    - Auto-fix linting issues"
-	@echo "  $(YELLOW)make quality$(RESET)     - Run all quality checks"
-	@echo ""
-	@echo "$(GREEN)Testing Commands:$(RESET)"
-	@echo "  $(YELLOW)make test$(RESET)        - Run all tests"
-	@echo "  $(YELLOW)make test-unit$(RESET)   - Run unit tests only"
-	@echo "  $(YELLOW)make test-integration$(RESET) - Run integration tests only"
-	@echo "  $(YELLOW)make test-coverage$(RESET) - Run tests with coverage"
-	@echo ""
-	@echo "$(GREEN)Build Commands:$(RESET)"
-	@echo "  $(YELLOW)make build$(RESET)       - Build package"
-	@echo "  $(YELLOW)make package$(RESET)     - Build and package for distribution"
-	@echo ""
-	@echo "$(GREEN)Documentation Commands:$(RESET)"
-	@echo "  $(YELLOW)make docs-build$(RESET)  - Build documentation"
-	@echo "  $(YELLOW)make docs-serve$(RESET)  - Serve documentation locally"
-	@echo ""
-	@echo "$(GREEN)Utility Commands:$(RESET)"
-	@echo "  $(YELLOW)make clean$(RESET)       - Clean Python cache and build artifacts"
-	@echo "  $(YELLOW)make clean-all$(RESET)   - Clean everything"
-	@echo "  $(YELLOW)make check-env$(RESET)   - Check environment setup"
-	@echo "  $(YELLOW)make requirements$(RESET) - Generate requirements files"
-	@echo "  $(YELLOW)make run-examples$(RESET) - Run examples"
+# =============================================================================
+# RELEASE COMMANDS
+# =============================================================================
+
+.PHONY: release publish publish-test check-publish-prereqs
+
+release: clean build ## Build all release artifacts
+
+publish: check-publish-prereqs ## Publish package to PyPI
+	@echo "$(BLUE)📦 Publishing to PyPI...$(RESET)"
+	@$(POETRY) publish --build
+	@echo "$(GREEN)✅ Package published to PyPI$(RESET)"
+
+publish-test: check-publish-prereqs ## Publish package to TestPyPI
+	@echo "$(BLUE)📦 Publishing to TestPyPI...$(RESET)"
+	@$(POETRY) publish --repository testpypi --build
+	@echo "$(GREEN)✅ Package published to TestPyPI$(RESET)"
+
+check-publish-prereqs: ## Check prerequisites for publishing
+	@echo "$(BLUE)🔍 Checking publishing prerequisites...$(RESET)"
+	@$(POETRY) --version >/dev/null 2>&1 || (echo "$(RED)❌ Poetry not found. Install with: pip install poetry$(RESET)" && exit 1)
+	@if [ -z "$${POETRY_PYPI_TOKEN_PYPI}" ] && [ -z "$${POETRY_PYPI_TOKEN_TESTPYPI}" ] && [ ! -f ~/.pypirc ]; then \
+		echo "$(YELLOW)⚠️  PyPI credentials not found. Set POETRY_PYPI_TOKEN_PYPI or configure ~/.pypirc$(RESET)"; \
+		echo "$(BLUE)💡 You can set credentials with:$(RESET)"; \
+		echo "   export POETRY_PYPI_TOKEN_PYPI=pypi-your_token_here"; \
+		echo "   export POETRY_PYPI_TOKEN_TESTPYPI=pypi-your_test_token_here"; \
+		echo "   OR configure ~/.pypirc file"; \
+		echo "$(BLUE)💡 Get tokens from: https://pypi.org/manage/account/token/$(RESET)"; \
+	fi
+
+test-auth: ## Test PyPI authentication
+	@echo "$(BLUE)🔐 Testing PyPI authentication...$(RESET)"
+	@$(POETRY) config --list | grep pypi || echo "$(YELLOW)No Poetry PyPI config found$(RESET)"
+	@if [ -n "$${POETRY_PYPI_TOKEN_PYPI}" ]; then \
+		echo "$(GREEN)✅ POETRY_PYPI_TOKEN_PYPI is set$(RESET)"; \
+	else \
+		echo "$(YELLOW)⚠️  POETRY_PYPI_TOKEN_PYPI not set$(RESET)"; \
+	fi
+	@if [ -f ~/.pypirc ]; then \
+		echo "$(GREEN)✅ ~/.pypirc file exists$(RESET)"; \
+	else \
+		echo "$(YELLOW)⚠️  ~/.pypirc file not found$(RESET)"; \
+	fi
+
+# =============================================================================
+# CI/CD COMMANDS
+# =============================================================================
+
+.PHONY: ci ci-test ci-quality
+
+ci: ci-quality ci-test ## Run CI pipeline (quality checks + tests)
+
+ci-test: test-unit test-integration ## Run CI tests
+
+ci-quality: format-check lint ## Run CI quality checks
+
+# =============================================================================
+# DEFAULT GOAL
+# =============================================================================
 
 .DEFAULT_GOAL := help 

@@ -2,17 +2,18 @@
 name = "mirasurf-py-template"
 version = "0.0.1"
 description = "A minimal template project for building Python libraries"
-authors = ["Mirasurf Team <team@example.com>"]
-maintainers = ["Mirasurf Team <team@example.com>"]
+authors = ["Your Name <you@example.com>"]
+maintainers = ["Your Name <you@example.com>"]
 readme = "README.md"
 license = "MIT"
-keywords = ["template", "python", "library", "development"]
+keywords = ["library", "development"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -94,4 +95,4 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
-] 
+]

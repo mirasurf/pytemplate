@@ -14,16 +14,17 @@ pip install -e ".[dev]"
 
 # Run tests
 make test
+```
 
 ## 📁 Project Structure
 
 ```
-├── pytemplate/  # Main package
+├── pytemplate/            # Main package
 ├── tests/                 # Test suite
 ├── docs/                  # Documentation
 ├── docker-compose.yml     # Development environment
-├── pyproject.toml        # Project configuration
-└── Makefile              # Development commands
+├── pyproject.toml         # Project configuration
+└── Makefile               # Development commands
 ```
 
 ## 📄 License

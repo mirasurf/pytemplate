@@ -6,7 +6,7 @@ A minimal, production-ready template for building Python libraries with modern d
 
 ```bash
 # Clone and customize
-git clone https://github.com/mirasurf/mirasurf-py-template.git my-library
+git clone https://github.com/mirasurf/pytemplate.git my-library
 cd my-library
 
 # Install development dependencies
